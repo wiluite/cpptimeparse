@@ -13,8 +13,14 @@ So, tests should confirm the correctness of this assumption.
 Hopefully using this tool to calculate TimeDelta data types as part of the csvkit alternatives will be a high speed option.
 
 
-
 _Prepare:_
+
+Install GCC, cmake tools if absent. For example (or similar):
+```bash
+apt install cmake
+apt install build-essential
+```
+Install pybind11:
 ```bash
 pip install pybind11
 ```
@@ -22,11 +28,56 @@ pip install pybind11
 _Build:_
 ```bash
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=path/to/pybind11 ..
+cmake -DCMAKE_PREFIX_PATH=path/to/pybind11 -DCMAKE_BUILD_TYPE=Release ..
 make
+cd ..
 ```
 
 _Run:_
 ```bash
 python test.py
+```
+
+**Source of test.py:**
+```
+import sys
+
+sys.path.append("build/")
+
+from cpptimeparse import time_parser
+from decimal import Decimal
+
+Parser = time_parser()
+if Parser.parse(" 2d, 1hr, 13 mins  02.166s ") == True:
+    # print formatted time
+    print(Parser.str())
+
+    # print formatted time from string result converted to double
+    print(Parser.str(Decimal(Parser.time())))
+
+    # print formatted time from seconds and microseconds result
+    time_pair = Parser.time_pair()
+    print(Parser.str(time_pair[0] + time_pair[1]/1000000))
+
+# print from a double
+print(Parser.str(177182.166))
+
+print("days=", Parser.days())
+print("clock_hours=", Parser.clock_hours())
+print("clock_minutes=", Parser.clock_minutes())
+print("clock_seconds=", Parser.clock_seconds())
+print("microseconds=", Parser.microseconds())
+```
+
+**Output:**
+```
+2 days, 01:13:02.166000
+2 days, 01:13:02.166000
+2 days, 01:13:02.166000
+2 days, 01:13:02.166000
+days= 2
+clock_hours= 1
+clock_minutes= 13
+clock_seconds= 2
+microseconds= 166000
 ```
