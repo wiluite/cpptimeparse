@@ -15,10 +15,11 @@ Hopefully using this tool to calculate TimeDelta data types as part of the csvki
 
 _Prepare:_
 
-Install GCC, cmake tools if absent. For example (or similar):
+Install GCC, cmake tools if absent. Also you should probably add python3-dev in some systems. For example (or similar):
 ```bash
-apt install cmake
-apt install build-essential
+sudo apt install cmake
+sudo apt install build-essential
+sudo apt install python3-dev
 ```
 Install pybind11:
 ```bash
