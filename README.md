@@ -39,7 +39,7 @@ python test.py
 ```
 
 **Source of test.py:**
-```
+```python
 import sys
 
 sys.path.append("build/")
