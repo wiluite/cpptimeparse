@@ -10,7 +10,6 @@
 using namespace std::chrono;
 
 class time_parser {
-
 public:
     bool parse(std::string_view sv) {
         auto const end = sv.find_last_not_of(" \r\t");
@@ -221,51 +220,71 @@ public:
     [[nodiscard]] unsigned clock_minutes() const {return clock_minutes_; }
     [[nodiscard]] unsigned clock_seconds() const {return clock_seconds_; }
     [[nodiscard]] unsigned microseconds() const {return microseconds_; }
+    [[nodiscard]] unsigned nanoseconds() const {return nanoseconds_; }
 
     [[nodiscard]] std::string time() const {
-        return std::to_string(seconds_) + '.' + std::to_string(microseconds_);
+        return std::to_string(seconds_) + '.' + std::to_string(round<std::chrono::microseconds>(rest_).count());
     }
 
-    [[nodiscard]] std::pair<std::size_t, unsigned> time_pair() const {
-        return {seconds_, microseconds_};
+    [[nodiscard]] std::tuple<std::size_t, unsigned, unsigned> time_tuple() const {
+        auto const microsecs = floor<std::chrono::microseconds>(rest_).count();
+        auto const nanosecs = round<std::chrono::nanoseconds>(rest_ - floor<std::chrono::microseconds>(rest_)).count();
+        return {seconds_, microsecs, nanosecs};
     }
 
-    [[nodiscard]] std::string str() const {
+    enum output_resolution {
+        MICRO,
+        NANO
+    };
+
+    [[nodiscard]] std::string str(output_resolution r = MICRO) const {
+        if (r == MICRO) {
+            microseconds_ = round<std::chrono::microseconds>(rest_).count();
+            nanoseconds_ = 0;
+        } else {
+            microseconds_ = floor<std::chrono::microseconds>(rest_).count();
+            nanoseconds_ = round<std::chrono::nanoseconds>(rest_ - floor<std::chrono::microseconds>(rest_)).count();
+        }
+
         std::stringstream ss;
         ss.imbue(std::locale("C"));
         ss.fill('0');
         if (days_)
             to_stream(ss, days_, (days_ == 1 ? " day, " : " days, "));
-        to_stream(ss, std::setw(2), clock_hours_, ":", std::setw(2), clock_minutes_, ":", std::setw(2), clock_seconds_);
+        to_stream(ss,  std::setw(clock_hours_ > 9 ? 2 : 1), clock_hours_, ":", std::setw(2), clock_minutes_, ":", std::setw(2), clock_seconds_);
         if (microseconds_)
             to_stream(ss, '.', microseconds_);
+        if (nanoseconds_)
+            to_stream(ss, ',', nanoseconds_, "ns");
         return ss.str();
     }
 
-    std::string str(long double seconds) const {
+    std::string str(long double seconds, output_resolution r = MICRO) const {
         std::chrono::duration<double, std::ratio<1>> secs {seconds};
         fill_parts(secs);
-        return str();
+        return str(r);
     }
 
 private:
     std::size_t seconds_;
+    mutable std::chrono::duration<long double, std::ratio<1>> rest_; 
     mutable unsigned days_;
     mutable unsigned clock_hours_;
     mutable unsigned clock_minutes_;
     mutable unsigned clock_seconds_;
     mutable unsigned microseconds_;
+    mutable unsigned nanoseconds_;
 
-    void fill_parts(std::chrono::duration<double, std::ratio<1>> secs) const {
-        days_ = floor<std::chrono::days>(secs).count();
-        secs -= floor<std::chrono::days>(secs);
-        clock_hours_ = floor<std::chrono::hours>(secs).count();
-        secs -= floor<std::chrono::hours>(secs);
-        clock_minutes_ = floor<std::chrono::minutes>(secs).count();
-        secs -= floor<std::chrono::minutes>(secs);
-        clock_seconds_ = floor<std::chrono::seconds>(secs).count();
-        secs -= floor<std::chrono::seconds>(secs);
-        microseconds_ = round<std::chrono::microseconds>(secs).count();
+    void fill_parts(std::chrono::duration<long double, std::ratio<1>> src) const {
+        days_ = floor<std::chrono::days>(src).count();
+        src -= floor<std::chrono::days>(src);
+        clock_hours_ = floor<std::chrono::hours>(src).count();
+        src -= floor<std::chrono::hours>(src);
+        clock_minutes_ = floor<std::chrono::minutes>(src).count();
+        src -= floor<std::chrono::minutes>(src);
+        clock_seconds_ = floor<std::chrono::seconds>(src).count();
+        src -= floor<std::chrono::seconds>(src);
+        rest_ = src;
     }
 
     template<class SS, class... Ts>

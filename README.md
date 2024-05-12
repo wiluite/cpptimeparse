@@ -49,36 +49,48 @@ from cpptimeparse import time_parser
 from decimal import Decimal
 
 Parser = time_parser()
-if Parser.parse(" 2d, 1hr, 13 mins  02.166s ") == True:
-    # print formatted time
-    print(Parser.str())
+if Parser.parse(" 2d, 1hr, 13 mins  02.1667891s ") == True:
+    print("Print formatted time with nanoseconds:")
+    print(Parser.str(time_parser.NANO))
 
-    # print formatted time from string result converted to double
-    print(Parser.str(Decimal(Parser.time())))
+    time_triple = Parser.time_tuple()
+    print(time_triple)
+    print("Print formatted time from triple (seconds, microseconds and nanoseconds):")
+    print(Parser.str(time_triple[0] + time_triple[1]/1000000 + time_triple[2]/1000000000,  time_parser.NANO))
 
-    # print formatted time from seconds and microseconds result
-    time_pair = Parser.time_pair()
-    print(Parser.str(time_pair[0] + time_pair[1]/1000000))
+    print("Print formatted time <seconds.microseconds> converted to double:")
+    print(Parser.str(Decimal(Parser.time()), time_parser.NANO))
 
-# print from a double
-print(Parser.str(177182.166))
+print("Print from any double (with microseconds):")
+print(Parser.str(177182.1667899, time_parser.MICRO))
+print("Print from any double (with nanoseconds):")
+print(Parser.str(177182.1667899, time_parser.NANO))
 
 print("days=", Parser.days())
 print("clock_hours=", Parser.clock_hours())
 print("clock_minutes=", Parser.clock_minutes())
 print("clock_seconds=", Parser.clock_seconds())
 print("microseconds=", Parser.microseconds())
+print("nanoseconds=", Parser.nanoseconds())
 ```
 
 **Output:**
 ```
-2 days, 01:13:02.166000
-2 days, 01:13:02.166000
-2 days, 01:13:02.166000
-2 days, 01:13:02.166000
+Print formatted time with nanoseconds:
+2 days, 1:13:02.166789,100ns
+(177182, 166789, 100)
+Print formatted time from triple (seconds, microseconds, nanoseconds):
+2 days, 1:13:02.166789,100ns
+Print formatted time <seconds.microseconds> converted to double:
+2 days, 1:13:02.166789
+Print from any double (with microseconds):
+2 days, 1:13:02.166790
+Print from any double (with nanoseconds):
+2 days, 1:13:02.166789,900ns
 days= 2
 clock_hours= 1
 clock_minutes= 13
 clock_seconds= 2
-microseconds= 166000
+microseconds= 166789
+nanoseconds= 900
 ```
