@@ -6,6 +6,8 @@
 #include <deque>
 #include <sstream>
 #include <iomanip>
+#include <unordered_map>
+#include <functional>
 
 using namespace std::chrono;
 
@@ -20,8 +22,8 @@ public:
         if (sv.find_first_of('h') != std::string_view::npos and std::count(sv.begin(), sv.end(), ':'))
             return false;
 
-        auto cursor = sv.begin() + beg;
-        auto const e = sv.begin() + end + 1;
+        auto cursor = sv.begin() + static_cast<long long>(beg);
+        auto const e = sv.begin() + static_cast<long long>(end) + 1;
 
         constexpr int max_possible_semicolons = 3;
         auto const semicolons = static_cast<int>(std::count_if(cursor, e, [](auto elem) {return elem == ':';}));
@@ -106,8 +108,8 @@ public:
 
             auto inc_sec = [&recent_num, &total_sec] (auto const & num) {
                 struct sstringstream : std::stringstream {
-                    sstringstream() : std::stringstream() { imbue(std::locale("C")); }  
-                }; 
+                    sstringstream() : std::stringstream() { imbue(std::locale("C")); }
+                };
                 sstringstream ss;
                 ss << recent_num;
                 long double value;
@@ -210,7 +212,7 @@ public:
                 return false;
         }
 
-        seconds_ = floor<std::chrono::seconds>(total_sec).count();
+        seconds_ = static_cast<decltype(seconds_)>(floor<std::chrono::seconds>(total_sec).count());
         fill_parts(total_sec);
         return true;
     }
@@ -239,11 +241,11 @@ public:
 
     [[nodiscard]] std::string str(output_resolution r = MICRO) const {
         if (r == MICRO) {
-            microseconds_ = round<std::chrono::microseconds>(rest_).count();
+            microseconds_ = static_cast<decltype(microseconds_)>(round<std::chrono::microseconds>(rest_).count());
             nanoseconds_ = 0;
         } else {
-            microseconds_ = floor<std::chrono::microseconds>(rest_).count();
-            nanoseconds_ = round<std::chrono::nanoseconds>(rest_ - floor<std::chrono::microseconds>(rest_)).count();
+            microseconds_ = static_cast<decltype(microseconds_)>(floor<std::chrono::microseconds>(rest_).count());
+            nanoseconds_ = static_cast<decltype(microseconds_)>(round<std::chrono::nanoseconds>(rest_ - floor<std::chrono::microseconds>(rest_)).count());
         }
 
         std::stringstream ss;
@@ -276,13 +278,13 @@ private:
     mutable unsigned nanoseconds_;
 
     void fill_parts(std::chrono::duration<long double, std::ratio<1>> src) const {
-        days_ = floor<std::chrono::days>(src).count();
+        days_ = static_cast<decltype(days_)>(floor<std::chrono::days>(src).count());
         src -= floor<std::chrono::days>(src);
-        clock_hours_ = floor<std::chrono::hours>(src).count();
+        clock_hours_ = static_cast<decltype(clock_hours_)>(floor<std::chrono::hours>(src).count());
         src -= floor<std::chrono::hours>(src);
-        clock_minutes_ = floor<std::chrono::minutes>(src).count();
+        clock_minutes_ = static_cast<decltype(clock_minutes_)>(floor<std::chrono::minutes>(src).count());
         src -= floor<std::chrono::minutes>(src);
-        clock_seconds_ = floor<std::chrono::seconds>(src).count();
+        clock_seconds_ = static_cast<decltype(clock_seconds_)>(floor<std::chrono::seconds>(src).count());
         src -= floor<std::chrono::seconds>(src);
         rest_ = src;
     }
