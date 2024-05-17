@@ -89,7 +89,7 @@ public:
                 for(;;) {
                     if (cursor == e or (c == ',' and ++commas > 1))
                         return false;
-                    if (!(std::isspace(c = *cursor++)) and c != ',') 
+                    if (!(std::isspace(c = *cursor++, std::locale("C"))) and c != ',')
                         return true; 
                 }
             };
@@ -99,7 +99,7 @@ public:
                 auto num_char = [&c, &cursor, &dots] {
                     c = *cursor++;
                     dots += c == '.' ? 1 : 0;
-                    return (dots < 2 and (std::isdigit(c) or c == '.'));
+                    return (dots < 2 and (std::isdigit(c, std::locale("C")) or c == '.'));
                 };
                 std::string s;
                 do s += c; while (cursor != e and num_char());
@@ -118,7 +118,7 @@ public:
             }; 
 
             auto digit_fun = [&space_fn, &c, &space_fun, &compose_num, &cursor, &recent_num, &inc_sec, &sec_deq, &next_fun, &commas] {
-                if (!space_fn() or !std::isdigit(c))
+                if (!space_fn() or !std::isdigit(c, std::locale("C")))
                     return false;
                 if (space_fn.target<decltype(initial_space_func)>())
                     space_fn = space_fun;
@@ -138,10 +138,10 @@ public:
             }; 
 
             auto complete_time_fun = [&cursor, &e, &c, &recent_num, &compose_num, &inc_sec, &sec_deq] {
-                if (++cursor == e or !(std::isdigit(c = *cursor++)))          
+                if (++cursor == e or !(std::isdigit(c = *cursor++, std::locale("C"))))
                     return false;
                 recent_num = compose_num();
-                if (cursor == e and std::isdigit(*(cursor - 1))) {
+                if (cursor == e and std::isdigit(*(cursor - 1), std::locale("C"))) {
                     auto const dot_pos = recent_num.find_first_of('.');
                     if ((dot_pos != std::string::npos and dot_pos != 2) or (dot_pos == std::string::npos and recent_num.size() != 2))
                         return false; 
@@ -155,7 +155,7 @@ public:
                         return false;
                 } else {
                     while(cursor != e) {
-                        if (!std::isspace(*cursor++))
+                        if (!std::isspace(*cursor++, std::locale("C")))
                             return false;
                     }
                 }
@@ -166,11 +166,11 @@ public:
 
             auto word_fun = [&space_fun, &c, &cursor, &e, &commas, &sym_deq, &inc_sec, &sym_to_sec
                     , &next_fun] {
-                if (!space_fun() or !(std::isalpha(c)))
+                if (!space_fun() or !(std::isalpha(c, std::locale("C"))))
                     return false;
 
                 auto isalpha_or_comma = [&] {
-                    return std::isalpha(c = *cursor++) || c == ',';
+                    return std::isalpha(c = *cursor++, std::locale("C")) || c == ',';
                 };
                 std::string word;
                 do {
@@ -197,7 +197,7 @@ public:
                         break;
                 }
 
-                if (cursor == e and std::isalpha(*(cursor - 1)))
+                if (cursor == e and std::isalpha(*(cursor - 1), std::locale("C")))
                     return true;
 
                 --cursor;

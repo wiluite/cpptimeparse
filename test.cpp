@@ -83,5 +83,36 @@ int main() {
     assert(!time_parser().parse("4 w 2 days 01:04:13:02.266"));
     assert(!time_parser().parse("34m5hr56s"));
 
+    //BAD CASES WITH LOCALE OTHER THAN C
+    assert(!time_parser().parse("32м"));
+    assert(!time_parser().parse("2.1234с"));
+    assert(!time_parser().parse("2ч3м"));
+    assert(!time_parser().parse("3д2ч32м"));
+    assert(!time_parser().parse("1нед3д2ч32м"));
+    assert(!time_parser().parse("1нед 3д 2ч 32м"));
+    assert(!time_parser().parse("1 нед 3 д 2 ч 32 м"));
+    assert(!time_parser().parse("2 дня, 4:13:02"));
+    assert(!time_parser().parse("2 дня,4:13:02.266"));
+    assert(!time_parser().parse("5часов34м56с"));
+    assert(!time_parser().parse("5 часов 34 минуты 56 секунд"));
+    assert(!time_parser().parse("5 минут"));
+    assert(!time_parser().parse("5 час, 34 мин, 56 сек"));
+    assert(!time_parser().parse("2 дня, 5 часов, 34 минуты, 56 секунд"));
+    assert(!time_parser().parse("1.2 м"));
+    assert(!time_parser().parse("1.2 мин"));
+    assert(!time_parser().parse("1.2 минуты"));
+    assert(!time_parser().parse("172 часа"));
+    assert(!time_parser().parse("172 час"));
+    assert(!time_parser().parse("172 ч"));
+    assert(!time_parser().parse("1.24 дня"));
+    assert(!time_parser().parse("5 д"));
+    assert(!time_parser().parse("5 дн"));
+    assert(!time_parser().parse("5 дней"));
+    assert(!time_parser().parse("5.6 н"));
+    assert(!time_parser().parse("5.6 нед"));
+    assert(!time_parser().parse("5.6 недель")); //obviously
+    assert(!time_parser().parse("5ч ,34м"));
+    assert(!time_parser().parse("5час, 34м"));
+    assert(!time_parser().parse("5час,34м"));
     return 0;
 }
