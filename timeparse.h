@@ -14,8 +14,8 @@ using namespace std::chrono;
 class time_parser {
 public:
     bool parse(std::string_view sv) {
-        auto const end = sv.find_last_not_of(" \r\t");
-        auto const beg = sv.find_first_not_of(" \r\t");
+        auto const end = sv.find_last_not_of(" \r\t\n");
+        auto const beg = sv.find_first_not_of(" \r\t\n");
         if (end - beg == 0)
             return false;
 
@@ -64,9 +64,9 @@ public:
             sec_deq.push_front(3600); 
 
         if (semicolons > 2)
-            sec_deq.push_front(86400); 
-       
-        enum class fun_type {digit, word, complete_time};
+            sec_deq.push_front(86400);
+
+        enum class fun_type {digit, complete_time, word};
         fun_type next_fun = fun_type::digit;
         char c;
      
@@ -120,7 +120,8 @@ public:
             auto digit_fun = [&space_fn, &c, &space_fun, &compose_num, &cursor, &recent_num, &inc_sec, &sec_deq, &next_fun, &commas] {
                 if (!space_fn() or !std::isdigit(c))
                     return false;
-                space_fn = space_fun;
+                if (space_fn.target<decltype(initial_space_func)>())
+                    space_fn = space_fun;
                 recent_num = compose_num();
                 --cursor;
                 if (c == ':') {
@@ -204,9 +205,8 @@ public:
                 return true;
             };
 
-            static
             std::unordered_map<fun_type, std::function<bool()>>
-            fun_map = {{fun_type::digit, digit_fun}, {fun_type::word, word_fun}, {fun_type::complete_time, complete_time_fun}};
+            fun_map = {{fun_type::digit, digit_fun}, {fun_type::complete_time, complete_time_fun}, {fun_type::word, word_fun}};
 
             if (!fun_map[next_fun]())
                 return false;
