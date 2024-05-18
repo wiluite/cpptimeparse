@@ -81,25 +81,26 @@ public:
         unsigned char commas = 0;
 
         std::string recent_num;
+        std::locale loc {"C"};
 
         while (cursor != e) {           
-            auto space_fun = [&c, &cursor, &commas, &e] {
+            auto space_fun = [&c, &cursor, &commas, &e, &loc] {
                 if (commas > 1)
                     return false;
                 for(;;) {
                     if (cursor == e or (c == ',' and ++commas > 1))
                         return false;
-                    if (!(std::isspace(c = *cursor++, std::locale("C"))) and c != ',')
+                    if (!(std::isspace(c = *cursor++, loc)) and c != ',')
                         return true; 
                 }
             };
 
-            auto compose_num = [&c, &cursor, &e] {
+            auto compose_num = [&c, &cursor, &e, &loc] {
                 unsigned dots = 0;
-                auto num_char = [&c, &cursor, &dots] {
+                auto num_char = [&c, &cursor, &dots, &loc] {
                     c = *cursor++;
                     dots += c == '.' ? 1 : 0;
-                    return (dots < 2 and (std::isdigit(c, std::locale("C")) or c == '.'));
+                    return (dots < 2 and (std::isdigit(c, loc) or c == '.'));
                 };
                 std::string s;
                 do s += c; while (cursor != e and num_char());
@@ -117,8 +118,8 @@ public:
                 total_sec += std::chrono::duration<long double, std::ratio<1>>(value * num);
             }; 
 
-            auto digit_fun = [&space_fn, &c, &space_fun, &compose_num, &cursor, &recent_num, &inc_sec, &sec_deq, &next_fun, &commas] {
-                if (!space_fn() or !std::isdigit(c, std::locale("C")))
+            auto digit_fun = [&space_fn, &c, &space_fun, &compose_num, &cursor, &recent_num, &inc_sec, &sec_deq, &next_fun, &commas, &loc] {
+                if (!space_fn() or !std::isdigit(c, loc))
                     return false;
                 if (space_fn.target<decltype(initial_space_func)>())
                     space_fn = space_fun;
@@ -137,11 +138,11 @@ public:
                 return true;                               
             }; 
 
-            auto complete_time_fun = [&cursor, &e, &c, &recent_num, &compose_num, &inc_sec, &sec_deq] {
-                if (++cursor == e or !(std::isdigit(c = *cursor++, std::locale("C"))))
+            auto complete_time_fun = [&cursor, &e, &c, &recent_num, &compose_num, &inc_sec, &sec_deq, &loc] {
+                if (++cursor == e or !(std::isdigit(c = *cursor++, loc)))
                     return false;
                 recent_num = compose_num();
-                if (cursor == e and std::isdigit(*(cursor - 1), std::locale("C"))) {
+                if (cursor == e and std::isdigit(*(cursor - 1), loc)) {
                     auto const dot_pos = recent_num.find_first_of('.');
                     if ((dot_pos != std::string::npos and dot_pos != 2) or (dot_pos == std::string::npos and recent_num.size() != 2))
                         return false; 
@@ -155,7 +156,7 @@ public:
                         return false;
                 } else {
                     while(cursor != e) {
-                        if (!std::isspace(*cursor++, std::locale("C")))
+                        if (!std::isspace(*cursor++, loc))
                             return false;
                     }
                 }
@@ -164,13 +165,12 @@ public:
                 return true;
             };
 
-            auto word_fun = [&space_fun, &c, &cursor, &e, &commas, &sym_deq, &inc_sec, &sym_to_sec
-                    , &next_fun] {
-                if (!space_fun() or !(std::isalpha(c, std::locale("C"))))
+            auto word_fun = [&space_fun, &c, &cursor, &e, &commas, &sym_deq, &inc_sec, &sym_to_sec, &next_fun, &loc] {
+                if (!space_fun() or !(std::isalpha(c, loc)))
                     return false;
 
                 auto isalpha_or_comma = [&] {
-                    return std::isalpha(c = *cursor++, std::locale("C")) || c == ',';
+                    return std::isalpha(c = *cursor++, loc) || c == ',';
                 };
                 std::string word;
                 do {
@@ -197,7 +197,7 @@ public:
                         break;
                 }
 
-                if (cursor == e and std::isalpha(*(cursor - 1), std::locale("C")))
+                if (cursor == e and std::isalpha(*(cursor - 1), loc))
                     return true;
 
                 --cursor;

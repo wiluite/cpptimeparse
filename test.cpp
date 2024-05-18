@@ -110,9 +110,8 @@ int main() {
     assert(!time_parser().parse("5 дней"));
     assert(!time_parser().parse("5.6 н"));
     assert(!time_parser().parse("5.6 нед"));
-    assert(!time_parser().parse("5.6 недель")); //obviously
+    assert(!time_parser().parse("5.6 недель"));
     assert(!time_parser().parse("5ч ,34м"));
     assert(!time_parser().parse("5час, 34м"));
     assert(!time_parser().parse("5час,34м"));
-    return 0;
 }
