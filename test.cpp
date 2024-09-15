@@ -53,6 +53,13 @@ int main() {
     tp.parse("1d 06:60:61");
     assert(tp.str() == "1 day, 7:01:01");
 
+    assert(time_parser().parse("+02d 06:15:69.000333"));
+
+    time_parser tp2;
+    tp2.parse("+02d 06:15:69.000333");
+    assert(tp2.str() == "2 days, 6:16:09.333");
+
+
     // BAD CASES
     assert(!time_parser().parse("02:01:13:022"));
     assert(!time_parser().parse("5hr,,34m"));
@@ -87,8 +94,9 @@ int main() {
     assert(!time_parser().parse("4 w 2 days 01:04:13:02.266"));
     assert(!time_parser().parse("34m5hr56s"));
     assert(!time_parser().parse("1d 06:60:100"));
+    assert(!time_parser().parse("+02 06:15:69.000333"));
 
-    //BAD CASES WITH LOCALE OTHER THAN C
+    //BAD CASES WITH A LOCALE OTHER THAN C
     assert(!time_parser().parse("32м"));
     assert(!time_parser().parse("2.1234с"));
     assert(!time_parser().parse("2ч3м"));
